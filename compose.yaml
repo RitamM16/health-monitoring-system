@@ -1,0 +1,91 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  server:
+    container_name: "api-server"
+    build:
+      context: .
+    ports:
+      - 5001:5001
+    environment:
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      - SMTP_URL=smtp4dev
+    depends_on:
+      - db
+      - redis
+    command: ["SERVER"]
+  scheduler:
+    container_name: "scheduler"
+    build:
+      context: .
+    environment:
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      - SMTP_URL=smtp4dev
+    depends_on:
+      - db
+      - redis
+      - worker
+      - server
+    command: ["SCHEDULER"]
+  worker:
+    container_name: "worker"
+    build:
+      context: .
+    environment:
+      - MYSQL_HOST=db
+      - REDIS_HOST=redis
+      - SMTP_URL=smtp4dev
+    depends_on:
+      - db
+      - redis
+      - smtp4dev
+      - server
+    command: ["WORKER"]
+  db:
+    image: mysql:latest
+    restart: always
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "my-secret-pw"
+    ports:
+      - "3306:3306"
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      # Change the number before : to the port the web interface should be accessible on
+      - '5000:80'
+      # Change the number before : to the port the SMTP server should be accessible on
+      - '25:25'
+      # Change the number before : to the port the IMAP server should be accessible on
+      - '143:143'
+    volumes:
+      # This is where smtp4dev stores the database..
+        - smtp4dev-data:/smtp4dev
+    environment:
+      #Specifies the URLs the web UI will use inside the container.
+      - ServerOptions__Urls=http://*:80
+      #Specifies the server hostname. Used in auto-generated TLS certificate if enabled.
+      - ServerOptions__HostName=smtp4dev
+  redis:
+    image: redis/redis-stack-server:latest
+    restart: "unless-stopped"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+volumes:
+  db-data:
+  smtp4dev-data:
+  redis-data:
+

@@ -13,6 +13,11 @@ sqlalchemy-utils = "^0.41.2"
 sqlalchemy-celery-beat = "^0.7.1"
 redis = "^5.0.4"
 hiredis = "^2.3.2"
+flask-login = "^0.6.3"
+gunicorn = "^22.0.0"
+uvicorn = "^0.29.0"
+flask-sqlalchemy = "^3.1.1"
+requests = "^2.32.2"
 
 
 [build-system]

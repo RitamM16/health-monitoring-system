@@ -1,6 +1,7 @@
 import requests
 import time
 from Data.Redis import redis
+from config import SMTP_URL
 
 def isHealthy(
     url: str,
@@ -67,6 +68,6 @@ def send_alert(email: str, url: str):
     msg['From'] = 'monitoring@test.com'
     msg['To'] = email
 
-    s = smtplib.SMTP('localhost')
+    s = smtplib.SMTP(SMTP_URL)
     s.send_message(msg)
     s.quit()
